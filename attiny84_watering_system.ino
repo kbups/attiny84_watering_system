@@ -29,7 +29,27 @@ volatile int f_watchdog_counter = 0; // Watchdogs counter
 // 4 min watering
 #define WATERING_DELAY 30                 // Watering duration (number of watchdogs before stopping the watering)
 
-#define WAKEUP_PIN      0     // Wake up pin (for interrupt)
+
+/* ATTINY84                  _____
+ *                VCC    1 -|°    |- 14    GND
+ * 10 | PCINT8  | PB0    2 -|     |- 13    PA0 | PCINT0 | 0
+ *  9 | PCINT9  | PB1    3 -|     |- 12    PA1 | PCINT1 | 1
+ * 11 | PCINT11 | PB3    4 -|     |- 11    PA2 | PCINT2 | 2
+ *  8 | PCINT10 | PB2    5 -|     |- 10    PA3 | PCINT3 | 3
+ *  7 | PCINT7  | PA7    6 -|     |-  9    PA4 | PCINT4 | 4
+ *  6 | PCINT6  | PA6    7 -|_____|-  8    PA5 | PCINT5 | 5
+ *                     
+ */
+
+/* ATTINY84                                       _____
+ * (arduino 5V)                        VCC    1 -|°    |- 14    GND              (arduino GND)
+ * (blue led)           10 | PCINT8  | PB0    2 -|     |- 13    PA0 | PCINT0 | 0 (button interrupt on/off watering)
+ * (soil moisture VCC)   9 | PCINT9  | PB1    3 -|     |- 12    PA1 | PCINT1 | 1 (red led)
+ * (arduino 10)         11 | PCINT11 | PB3    4 -|     |- 11    PA2 | PCINT2 | 2 (soil moisture digital pin)
+ * (calibration pin)     8 | PCINT10 | PB2    5 -|     |- 10    PA3 | PCINT3 | 3 (relay VCC)
+ * (green led)           7 | PCINT7  | PA7    6 -|     |-  9    PA4 | PCINT4 | 4 (arduino 13)
+ * (arduino 11)          6 | PCINT6  | PA6    7 -|_____|-  8    PA5 | PCINT5 | 5 (arduino 12)
+ */
 #define LED_RED_PIN     1     // Red light
 #define SOIL_D0_PIN     2     // Digital pin for the moisture sensor
 #define RELAY_PIN       3     // Watering relay
@@ -78,8 +98,8 @@ ISR(WDT_vect) {
 ISR (PCINT0_vect) {}
 
 void setup_interrupts() {
-  pinMode(WAKEUP_PIN, INPUT);        // Set the pin to input
-  digitalWrite(WAKEUP_PIN, HIGH);    // Activate internal pullup resistor 
+  pinMode(PCINT0, INPUT);        // Set the pin to input
+  digitalWrite(PCINT0, HIGH);    // Activate internal pullup resistor 
   
   PCMSK0 |= bit (PCINT0);   //                                   Pin Change Mask Register
   GIFR   |= bit (PCIF0);    // clear any outstanding interrupts  General Interrupt Flag Register
